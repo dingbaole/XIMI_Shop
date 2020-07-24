@@ -2,7 +2,16 @@
   <div>
     <el-container class="box">
       <el-header height="110px">
-        <p></p>
+        <p v-if="this.$store.state.user == '' ">
+          <span class="dl" @click="dl(2)">登录</span>
+        </p>
+        <p v-else>
+          <span>{{ this.$store.state.user.name }} </span>
+          <span @click="dl(1)">退出登录 </span>
+          
+          <i class="el-icon-shopping-cart-2" @click="tcart"></i>
+        </p>
+
         <p>
           <span @click="sort">
             <i class="el-icon-d-caret" v-if="sortIndex==0"></i>
@@ -32,7 +41,7 @@
               <p>￥{{ item.salePrice }}</p>
             </div>
             <div>
-              <el-button type="success" plain>加入购物车</el-button>
+              <el-button type="success" plain @click="addCart(item)">加入购物车</el-button>
             </div>
           </div>
         </el-main>
@@ -55,7 +64,7 @@ export default {
       list: [], //数据渲染
       sortIndex: 0,
       data: 2,
-      jiazai: true
+      jiazai: true,
     };
   },
   components: {},
@@ -76,23 +85,23 @@ export default {
         let max = nav.split("-")[1];
         let min = nav.split("-")[0];
         // console.log(min,max)
-        newlist = this.list.filter(item => {
+        newlist = this.list.filter((item) => {
           return item.salePrice > min && item.salePrice < max;
         });
       }
 
       return newlist;
-    }
+    },
   },
   methods: {
     getlist() {
       this.$axios({
-        url: "/data.json"
-      }).then(res => {
-        console.log(res.data.result.list);
+        url: "/data.json",
+      }).then((res) => {
         this.list = res.data.result.list;
       });
     },
+
     jiazaigengdo() {
       if (this.data > 3 || this.jiazai == false) {
         return false;
@@ -101,21 +110,35 @@ export default {
       this.jiazai = false;
 
       this.$axios({
-        url: `/data${this.data}.json`
-      }).then(res => {
+        url: `/data${this.data}.json`,
+      }).then((res) => {
         this.list.push(...res.data.result.list);
         this.data++;
         this.jiazai = true;
       });
     },
+
     sort() {
       if (this.sortIndex == 0 || this.sortIndex == 1) {
         this.sortIndex = 2;
       } else {
         this.sortIndex = 1;
       }
+    },
+
+    dl(num) {
+      this.$store.commit("dl", num);
+    },
+
+    addCart(item){
+      console.log(item)
+      this.$store.commit('addCart',item)
+    },
+
+    tcart(){
+      this.$router.push('/home/cart')
     }
-  }
+  },
 };
 </script>
 
@@ -192,6 +215,7 @@ export default {
     }
   }
 }
+
 @media screen and (min-width: 960px) {
   #main {
     display: flex;
@@ -219,6 +243,7 @@ export default {
     }
   }
 }
+
 @media screen and (max-width: 750px) {
   #main {
     display: flex;
